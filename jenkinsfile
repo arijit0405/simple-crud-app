@@ -1,5 +1,5 @@
 pipeline {
-    agent any  // Use any available Jenkins agent
+    agent any
 
     environment {
         MAVEN_HOME = tool name: 'Maven', type: 'maven'
@@ -8,25 +8,48 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                // Pull code from GitHub
+                // Checkout code from GitHub
                 git url: 'https://github.com/arijit0405/simple-crud-app.git', branch: 'main'
             }
         }
 
-        stage('Build') {
+        stage('Verify Branch') {
+            when {
+                expression {
+                    // Proceed only if the branch is 'main'
+                    return env.GIT_BRANCH == 'origin/main' || env.BRANCH_NAME == 'main'
+                }
+            }
             steps {
-                // Clean and build the application
+                echo 'On main branch, proceeding with the pipeline...'
+            }
+        }
+
+        stage('Build') {
+            when {
+                expression {
+                    // Run this stage only if we are on the main branch
+                    return env.GIT_BRANCH == 'origin/main' || env.BRANCH_NAME == 'main'
+                }
+            }
+            steps {
+                // Clean and compile the application
                 sh "${MAVEN_HOME}/bin/mvn clean compile"
             }
         }
 
         stage('Test') {
+            when {
+                expression {
+                    // Run this stage only if we are on the main branch
+                    return env.GIT_BRANCH == 'origin/main' || env.BRANCH_NAME == 'main'
+                }
+            }
             steps {
                 // Run unit tests
                 sh "${MAVEN_HOME}/bin/mvn test"
             }
             post {
-                // Mark build as unstable if tests fail
                 unstable {
                     echo 'Some tests failed.'
                 }
@@ -34,12 +57,17 @@ pipeline {
         }
 
         stage('Package') {
+            when {
+                expression {
+                    // Run this stage only if we are on the main branch
+                    return env.GIT_BRANCH == 'origin/main' || env.BRANCH_NAME == 'main'
+                }
+            }
             steps {
-                // Package the application into a .jar file
+                // Package the application as a .jar file
                 sh "${MAVEN_HOME}/bin/mvn package"
             }
             post {
-                // Archive the .jar file as a build artifact
                 success {
                     archiveArtifacts artifacts: 'target/*.jar', allowEmptyArchive: true
                 }
@@ -47,21 +75,27 @@ pipeline {
         }
 
         stage('Deploy') {
+            when {
+                expression {
+                    // Run this stage only if we are on the main branch
+                    return env.GIT_BRANCH == 'origin/main' || env.BRANCH_NAME == 'main'
+                }
+            }
             steps {
-                // Placeholder for deploy steps (can use SSH or other methods)
+                // Placeholder for deployment steps
                 echo 'Deploying application...'
-                // Example: Deploy to a remote server via SSH (if configured)
-                // sshPublisher(publishers: [
-                //     sshPublisherDesc(configName: 'your-server', transfers: [
-                //         sshTransfer(sourceFiles: 'target/*.jar', removePrefix: 'target', remoteDirectory: '/path/to/deploy')
-                //     ])
-                // ])
             }
         }
 
         stage('Notify') {
+            when {
+                expression {
+                    // Run this stage only if we are on the main branch
+                    return env.GIT_BRANCH == 'origin/main' || env.BRANCH_NAME == 'main'
+                }
+            }
             steps {
-                // Send email notification with the build result
+                // Send email notification with the build status
                 mail to: 'your-email@example.com',
                      subject: "Build ${currentBuild.fullDisplayName} - ${currentBuild.result}",
                      body: "The build has ${currentBuild.result}. Check Jenkins for details: ${env.BUILD_URL}"
