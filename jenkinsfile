@@ -96,7 +96,7 @@ pipeline {
             }
             steps {
                 // Send email notification with the build status
-                mail to: 'your-email@example.com',
+                mail to: 'arijitchakraborty691@gmail.com',
                      subject: "Build ${currentBuild.fullDisplayName} - ${currentBuild.result}",
                      body: "The build has ${currentBuild.result}. Check Jenkins for details: ${env.BUILD_URL}"
             }
