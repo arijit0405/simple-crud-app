@@ -13,39 +13,17 @@ pipeline {
             }
         }
 
-        stage('Verify Branch') {
-            when {
-                expression {
-                    // Proceed only if the branch is 'main'
-                    return env.GIT_BRANCH == 'origin/main' || env.BRANCH_NAME == 'main'
-                }
-            }
-            steps {
-                echo 'On main branch, proceeding with the pipeline...'
-            }
-        }
-
         stage('Build') {
-            when {
-                expression {
-                    // Run this stage only if we are on the main branch
-                    return env.GIT_BRANCH == 'origin/main' || env.BRANCH_NAME == 'main'
-                }
-            }
             steps {
+                echo 'Building the application...'
                 // Clean and compile the application
                 sh "${MAVEN_HOME}/bin/mvn clean compile"
             }
         }
 
         stage('Test') {
-            when {
-                expression {
-                    // Run this stage only if we are on the main branch
-                    return env.GIT_BRANCH == 'origin/main' || env.BRANCH_NAME == 'main'
-                }
-            }
             steps {
+                echo 'Running tests...'
                 // Run unit tests
                 sh "${MAVEN_HOME}/bin/mvn test"
             }
@@ -53,52 +31,9 @@ pipeline {
                 unstable {
                     echo 'Some tests failed.'
                 }
-            }
-        }
-
-        stage('Package') {
-            when {
-                expression {
-                    // Run this stage only if we are on the main branch
-                    return env.GIT_BRANCH == 'origin/main' || env.BRANCH_NAME == 'main'
-                }
-            }
-            steps {
-                // Package the application as a .jar file
-                sh "${MAVEN_HOME}/bin/mvn package"
-            }
-            post {
                 success {
-                    archiveArtifacts artifacts: 'target/*.jar', allowEmptyArchive: true
+                    echo 'All tests passed.'
                 }
-            }
-        }
-
-        stage('Deploy') {
-            when {
-                expression {
-                    // Run this stage only if we are on the main branch
-                    return env.GIT_BRANCH == 'origin/main' || env.BRANCH_NAME == 'main'
-                }
-            }
-            steps {
-                // Placeholder for deployment steps
-                echo 'Deploying application...'
-            }
-        }
-
-        stage('Notify') {
-            when {
-                expression {
-                    // Run this stage only if we are on the main branch
-                    return env.GIT_BRANCH == 'origin/main' || env.BRANCH_NAME == 'main'
-                }
-            }
-            steps {
-                // Send email notification with the build status
-                mail to: 'arijitchakraborty691@gmail.com',
-                     subject: "Build ${currentBuild.fullDisplayName} - ${currentBuild.result}",
-                     body: "The build has ${currentBuild.result}. Check Jenkins for details: ${env.BUILD_URL}"
             }
         }
     }
