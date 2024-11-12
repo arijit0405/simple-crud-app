@@ -12,6 +12,6 @@ public class ProductTest {
         Product product = new Product();
         product.setPrice(100.0);
         double expectedPrice = 100.0;
-        assertEquals(expectedPrice, product.getPrice(), "The price should be 100.0");
+        assertEquals(expectedPrice, product.getPrice(), "The price should be 10.0");
     }
 }
