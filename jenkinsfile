@@ -3,6 +3,7 @@ pipeline {
 
     environment {
         MAVEN_HOME = tool name: 'Maven', type: 'maven'
+        SONAR_SERVER = 'SonarQube-Local'  // Make sure this matches the name you set in Jenkins' SonarQube configuration
     }
 
     stages {
@@ -26,28 +27,24 @@ pipeline {
         }
 
         stage('Build') {
-            when {
-                expression {
-                    // Run this stage only if we are on the main branch
-                    return env.GIT_BRANCH == 'origin/main' || env.BRANCH_NAME == 'main'
-                }
-            }
             steps {
-                // Clean and compile the application
-                bat "${MAVEN_HOME}\\bin\\mvn clean compile"
+                script {
+                    if (env.GIT_BRANCH == 'origin/main' || env.BRANCH_NAME == 'main') {
+                        // Clean and compile the application
+                        bat "${MAVEN_HOME}/bin/mvn clean compile"
+                    }
+                }
             }
         }
 
         stage('Test') {
-            when {
-                expression {
-                    // Run this stage only if we are on the main branch
-                    return env.GIT_BRANCH == 'origin/main' || env.BRANCH_NAME == 'main'
-                }
-            }
             steps {
-                // Run unit tests
-                bat "${MAVEN_HOME}\\bin\\mvn test"
+                script {
+                    if (env.GIT_BRANCH == 'origin/main' || env.BRANCH_NAME == 'main') {
+                        // Run unit tests
+                        bat "${MAVEN_HOME}/bin/mvn test"
+                    }
+                }
             }
             post {
                 unstable {
@@ -56,21 +53,46 @@ pipeline {
             }
         }
 
-        stage('Package') {
+        stage('SonarQube Analysis') {
             when {
                 expression {
-                    // Run this stage only if we are on the main branch
                     return env.GIT_BRANCH == 'origin/main' || env.BRANCH_NAME == 'main'
                 }
             }
             steps {
-                // Package the application as a .jar file
-                bat "${MAVEN_HOME}\\bin\\mvn package"
+                withSonarQubeEnv(SONAR_SERVER) {
+                    bat "${MAVEN_HOME}/bin/mvn sonar:sonar -Dsonar.projectKey=SimpleCrudApp -Dsonar.host.url=http://localhost:9090 -Dsonar.login=${SONARQUBE_TOKEN}"
+                }
+            }
+        }
+
+        stage('Package') {
+            steps {
+                script {
+                    if (env.GIT_BRANCH == 'origin/main' || env.BRANCH_NAME == 'main') {
+                        // Package the application as a .jar file
+                        bat "${MAVEN_HOME}/bin/mvn package"
+                    }
+                }
             }
             post {
                 success {
-                    archiveArtifacts artifacts: 'target\\*.jar', allowEmptyArchive: true
+                    archiveArtifacts artifacts: 'target/*.jar', allowEmptyArchive: true
                 }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                echo 'Deploying application...'
+            }
+        }
+
+        stage('Notify') {
+            steps {
+                mail to: 'arijitchakraborty691@gmail.com',
+                     subject: "Build ${currentBuild.fullDisplayName} - ${currentBuild.result}",
+                     body: "The build has ${currentBuild.result}. Check Jenkins for details: ${env.BUILD_URL}"
             }
         }
     }
