@@ -13,26 +13,63 @@ pipeline {
             }
         }
 
-        stage('Build') {
+        stage('Verify Branch') {
+            when {
+                expression {
+                    // Proceed only if the branch is 'main'
+                    return env.GIT_BRANCH == 'origin/main' || env.BRANCH_NAME == 'main'
+                }
+            }
             steps {
-                echo 'Building the application...'
+                echo 'On main branch, proceeding with the pipeline...'
+            }
+        }
+
+        stage('Build') {
+            when {
+                expression {
+                    // Run this stage only if we are on the main branch
+                    return env.GIT_BRANCH == 'origin/main' || env.BRANCH_NAME == 'main'
+                }
+            }
+            steps {
                 // Clean and compile the application
-                sh "${MAVEN_HOME}/bin/mvn clean compile"
+                bat "${MAVEN_HOME}\\bin\\mvn clean compile"
             }
         }
 
         stage('Test') {
+            when {
+                expression {
+                    // Run this stage only if we are on the main branch
+                    return env.GIT_BRANCH == 'origin/main' || env.BRANCH_NAME == 'main'
+                }
+            }
             steps {
-                echo 'Running tests...'
                 // Run unit tests
-                sh "${MAVEN_HOME}/bin/mvn test"
+                bat "${MAVEN_HOME}\\bin\\mvn test"
             }
             post {
                 unstable {
                     echo 'Some tests failed.'
                 }
+            }
+        }
+
+        stage('Package') {
+            when {
+                expression {
+                    // Run this stage only if we are on the main branch
+                    return env.GIT_BRANCH == 'origin/main' || env.BRANCH_NAME == 'main'
+                }
+            }
+            steps {
+                // Package the application as a .jar file
+                bat "${MAVEN_HOME}\\bin\\mvn package"
+            }
+            post {
                 success {
-                    echo 'All tests passed.'
+                    archiveArtifacts artifacts: 'target\\*.jar', allowEmptyArchive: true
                 }
             }
         }
