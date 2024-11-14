@@ -39,10 +39,12 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('SonarQube-Local') {
-                    bat "${MAVEN_HOME}/bin/mvn sonar:sonar -Dsonar.projectKey=SimpleCrudApp -Dsonar.host.url=http://localhost:9000 -Dsonar.login=${SonarQubeToken}"
+                    // Use credentials binding for the Sonar token
+                    withCredentials([string(credentialsId: 'SonarQubeToken', variable: 'SONAR_TOKEN')]) {
+                        bat "${MAVEN_HOME}/bin/mvn sonar:sonar -Dsonar.projectKey=SimpleCrudApp -Dsonar.host.url=http://localhost:9000 -Dsonar.login=${SONAR_TOKEN}"
+                    }
                 }
             }
-        }
 
         stage('Package') {
             steps {
