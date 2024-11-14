@@ -13,21 +13,11 @@ pipeline {
             }
         }
 
-        stage('Verify Branch') {
-            when {
-                expression { return env.GIT_BRANCH == 'origin/main' || env.BRANCH_NAME == 'main' }
-            }
-            steps {
-                echo 'On main branch, proceeding with the pipeline...'
-            }
-        }
-
         stage('Build') {
             steps {
                 script {
-                    if (env.GIT_BRANCH == 'origin/main' || env.BRANCH_NAME == 'main') {
-                        bat "${MAVEN_HOME}/bin/mvn clean compile"
-                    }
+                    // Clean and compile the application
+                    bat "${MAVEN_HOME}/bin/mvn clean compile"
                 }
             }
         }
@@ -35,9 +25,8 @@ pipeline {
         stage('Test') {
             steps {
                 script {
-                    if (env.GIT_BRANCH == 'origin/main' || env.BRANCH_NAME == 'main') {
-                        bat "${MAVEN_HOME}/bin/mvn test"
-                    }
+                    // Run unit tests
+                    bat "${MAVEN_HOME}/bin/mvn test"
                 }
             }
             post {
@@ -48,15 +37,9 @@ pipeline {
         }
 
         stage('SonarQube Analysis') {
-            when {
-                expression { return env.GIT_BRANCH == 'origin/main' || env.BRANCH_NAME == 'main' }
-            }
             steps {
                 withSonarQubeEnv('SonarQube-Local') {
-                    // Use credentials binding for the Sonar token
-                    withCredentials([string(credentialsId: 'SonarQubeToken', variable: 'SONAR_TOKEN')]) {
-                        bat "${MAVEN_HOME}/bin/mvn sonar:sonar -Dsonar.projectKey=SimpleCrudApp -Dsonar.host.url=http://localhost:9000 -Dsonar.login=${SONAR_TOKEN}"
-                    }
+                    bat "${MAVEN_HOME}/bin/mvn sonar:sonar -Dsonar.projectKey=SimpleCrudApp -Dsonar.host.url=http://localhost:9000 -Dsonar.login=${SonarQubeToken}"
                 }
             }
         }
@@ -64,9 +47,8 @@ pipeline {
         stage('Package') {
             steps {
                 script {
-                    if (env.GIT_BRANCH == 'origin/main' || env.BRANCH_NAME == 'main') {
-                        bat "${MAVEN_HOME}/bin/mvn package"
-                    }
+                    // Package the application as a .jar file
+                    bat "${MAVEN_HOME}/bin/mvn package"
                 }
             }
             post {
@@ -79,14 +61,6 @@ pipeline {
         stage('Deploy') {
             steps {
                 echo 'Deploying application...'
-            }
-        }
-
-        stage('Notify') {
-            steps {
-                mail to: 'arijitchakraborty691@gmail.com',
-                     subject: "Build ${currentBuild.fullDisplayName} - ${currentBuild.result}",
-                     body: "The build has ${currentBuild.result}. Check Jenkins for details: ${env.BUILD_URL}"
             }
         }
     }
