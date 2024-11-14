@@ -61,7 +61,7 @@ pipeline {
             }
              steps {
         withSonarQubeEnv('SonarQube-Local') {
-            bat "${MAVEN_HOME}/bin/mvn sonar:sonar -Dsonar.projectKey=SimpleCrudApp -Dsonar.host.url=http://localhost:9000 -Dsonar.login=${SonarQubeToken}"
+            bat "${MAVEN_HOME}/bin/mvn sonar:sonar -Dsonar.projectKey=SimpleCrudApp -Dsonar.host.url=http://localhost:9000 -Dsonar.login=${env.SonarQubeToken}"
         }
     }
 }
