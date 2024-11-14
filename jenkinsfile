@@ -3,23 +3,19 @@ pipeline {
 
     environment {
         MAVEN_HOME = tool name: 'Maven', type: 'maven'
-        SONAR_SERVER = 'SonarQube-Local'  // Make sure this matches the name you set in Jenkins' SonarQube configuration
+        SONAR_SERVER = 'SonarQube-Local'  // Ensure this matches the name in Jenkins' SonarQube configuration
     }
 
     stages {
         stage('Checkout') {
             steps {
-                // Checkout code from GitHub
                 git url: 'https://github.com/arijit0405/simple-crud-app.git', branch: 'main'
             }
         }
 
         stage('Verify Branch') {
             when {
-                expression {
-                    // Proceed only if the branch is 'main'
-                    return env.GIT_BRANCH == 'origin/main' || env.BRANCH_NAME == 'main'
-                }
+                expression { return env.GIT_BRANCH == 'origin/main' || env.BRANCH_NAME == 'main' }
             }
             steps {
                 echo 'On main branch, proceeding with the pipeline...'
@@ -30,7 +26,6 @@ pipeline {
             steps {
                 script {
                     if (env.GIT_BRANCH == 'origin/main' || env.BRANCH_NAME == 'main') {
-                        // Clean and compile the application
                         bat "${MAVEN_HOME}/bin/mvn clean compile"
                     }
                 }
@@ -41,7 +36,6 @@ pipeline {
             steps {
                 script {
                     if (env.GIT_BRANCH == 'origin/main' || env.BRANCH_NAME == 'main') {
-                        // Run unit tests
                         bat "${MAVEN_HOME}/bin/mvn test"
                     }
                 }
@@ -55,22 +49,22 @@ pipeline {
 
         stage('SonarQube Analysis') {
             when {
-                expression {
-                    return env.GIT_BRANCH == 'origin/main' || env.BRANCH_NAME == 'main'
+                expression { return env.GIT_BRANCH == 'origin/main' || env.BRANCH_NAME == 'main' }
+            }
+            steps {
+                withSonarQubeEnv('SonarQube-Local') {
+                    // Use credentials binding for the Sonar token
+                    withCredentials([string(credentialsId: 'SonarQubeToken', variable: 'SONAR_TOKEN')]) {
+                        bat "${MAVEN_HOME}/bin/mvn sonar:sonar -Dsonar.projectKey=SimpleCrudApp -Dsonar.host.url=http://localhost:9000 -Dsonar.login=${SONAR_TOKEN}"
+                    }
                 }
             }
-             steps {
-        withSonarQubeEnv('SonarQube-Local') {
-            bat "${MAVEN_HOME}/bin/mvn sonar:sonar -Dsonar.projectKey=SimpleCrudApp -Dsonar.host.url=http://localhost:9000 -Dsonar.login=${env.SonarQubeToken}"
         }
-    }
-}
 
         stage('Package') {
             steps {
                 script {
                     if (env.GIT_BRANCH == 'origin/main' || env.BRANCH_NAME == 'main') {
-                        // Package the application as a .jar file
                         bat "${MAVEN_HOME}/bin/mvn package"
                     }
                 }
