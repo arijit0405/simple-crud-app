@@ -92,11 +92,11 @@
 
     <distributionManagement>
         <repository>
-            <id>nexus</id>
+            <id>nexus-credentials</id>
             <url>http://localhost:8081/repository/maven-releases/</url> <!-- Nexus Release Repository -->
         </repository>
         <snapshotRepository>
-            <id>nexus</id>
+            <id>nexus-credentials</id>
             <url>http://localhost:8081/repository/maven-snapshots/</url> <!-- Nexus Snapshot Repository -->
         </snapshotRepository>
     </distributionManagement>
