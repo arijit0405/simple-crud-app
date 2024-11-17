@@ -86,14 +86,15 @@
         </plugins>
     </build>
 
-    <distributionManagement>
-        <repository>
-            <id>nexus</id> <!-- Ensure this matches the <id> in settings.xml server section -->
-            <url>http://localhost:8081/repository/maven-releases/</url> <!-- Nexus Release Repository -->
-        </repository>
-        <snapshotRepository>
-            <id>nexus</id> <!-- Ensure this matches the <id> in settings.xml server section -->
-            <url>http://localhost:8081/repository/maven-snapshots/</url> <!-- Nexus Snapshot Repository -->
-        </snapshotRepository>
-    </distributionManagement>
+  <distributionManagement>
+    <repository>
+        <id>nexus-releases</id>
+        <url>http://localhost:8081/repository/maven-releases/</url>
+    </repository>
+    <snapshotRepository>
+        <id>nexus-snapshots</id>
+        <url>http://localhost:8081/repository/maven-snapshots/</url>
+    </snapshotRepository>
+</distributionManagement>
+
 </project>
