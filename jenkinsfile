@@ -4,8 +4,7 @@ pipeline {
     environment {
         MAVEN_HOME = tool name: 'Maven', type: 'maven'
         SONAR_SERVER = 'SonarQube-Local'
-        NEXUS_USERNAME = credentials('admin')  // Jenkins credentials ID
-        NEXUS_PASSWORD = credentials('914f4530-b92a-49b4-a2ea-77713f7143db')  // Jenkins credentials ID
+      
     }
 
     stages {
