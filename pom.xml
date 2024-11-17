@@ -64,16 +64,17 @@
         </plugins>
     </build>
 
-  <distributionManagement>
+<distributionManagement>
     <repository>
-        <id>releases</id>
+        <id>nexus-releases</id>
         <url>http://localhost:8081/repository/maven-releases/</url>
     </repository>
     <snapshotRepository>
-        <id>snapshots</id>
+        <id>nexus-snapshots</id>
         <url>http://localhost:8081/repository/maven-snapshots/</url>
     </snapshotRepository>
 </distributionManagement>
+
 
 
 </project>
