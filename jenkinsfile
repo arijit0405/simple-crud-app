@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         MAVEN_HOME = tool name: 'Maven', type: 'maven'
-        SONAR_SERVER = 'SonarQube-Local'  // Ensure this matches the name in Jenkins' SonarQube configuration
+        SONAR_SERVER = 'SonarQube-Local'
     }
 
     stages {
@@ -16,7 +16,6 @@ pipeline {
         stage('Build') {
             steps {
                 script {
-                    // Clean and compile the application
                     bat "${MAVEN_HOME}/bin/mvn clean compile"
                 }
             }
@@ -25,7 +24,6 @@ pipeline {
         stage('Test') {
             steps {
                 script {
-                    // Run unit tests
                     bat "${MAVEN_HOME}/bin/mvn test"
                 }
             }
@@ -39,7 +37,6 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('SonarQube-Local') {
-                    // Use credentials binding for the Sonar token
                     withCredentials([string(credentialsId: 'SonarQubeToken', variable: 'SONAR_TOKEN')]) {
                         bat "${MAVEN_HOME}/bin/mvn sonar:sonar -Dsonar.projectKey=SimpleCrudApp -Dsonar.host.url=http://localhost:9000 -Dsonar.login=${SONAR_TOKEN}"
                     }
@@ -50,7 +47,6 @@ pipeline {
         stage('Package') {
             steps {
                 script {
-                    // Package the application as a .jar file
                     bat "${MAVEN_HOME}/bin/mvn package"
                 }
             }
@@ -61,9 +57,13 @@ pipeline {
             }
         }
 
-        stage('Deploy') {
+        stage('Deploy to Nexus') {
             steps {
-                echo 'Deploying application...'
+                script {
+                    withCredentials([usernamePassword(credentialsId: 'nexus-credentials', usernameVariable: 'NEXUS_USERNAME', passwordVariable: 'NEXUS_PASSWORD')]) {
+                        bat "${MAVEN_HOME}/bin/mvn deploy -DaltDeploymentRepository=nexus::default::http://localhost:8081/repository/maven-releases/ -Dnexus.username=${NEXUS_USERNAME} -Dnexus.password=${NEXUS_PASSWORD}"
+                    }
+                }
             }
         }
     }
