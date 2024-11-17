@@ -82,21 +82,17 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-deploy-plugin</artifactId>
                 <version>3.0.0-M1</version>
-                <configuration>
-                    <url>http://localhost:8081/repository/maven-releases/</url> <!-- Replace with Nexus repo URL -->
-                    <repositoryId>nexus</repositoryId>
-                </configuration>
             </plugin>
         </plugins>
     </build>
 
     <distributionManagement>
         <repository>
-            <id>nexus-credentials</id>
+            <id>nexus</id> <!-- Ensure this matches the <id> in settings.xml server section -->
             <url>http://localhost:8081/repository/maven-releases/</url> <!-- Nexus Release Repository -->
         </repository>
         <snapshotRepository>
-            <id>nexus-credentials</id>
+            <id>nexus</id> <!-- Ensure this matches the <id> in settings.xml server section -->
             <url>http://localhost:8081/repository/maven-snapshots/</url> <!-- Nexus Snapshot Repository -->
         </snapshotRepository>
     </distributionManagement>
