@@ -52,7 +52,7 @@ pipeline {
             }
             post {
                 success {
-                    archiveArtifacts artifacts: 'target/*.jar', allowEmptyArchive: true
+                    archiveArtifacts artifacts: 'target/*.war', allowEmptyArchive: true
                 }
             }
         }
@@ -66,9 +66,11 @@ pipeline {
                         nexusUrl: 'localhost:8081',
                         repository: 'maven-releases',
                         credentialsId: 'nexus-credentials',
+                        groupId: 'com.example',  // Matches groupId in pom.xml
+                        version: '1.0-SNAPSHOT', // Matches version in pom.xml
                         artifacts: [
                             [
-                                artifactId: 'simple-crud-app',
+                                artifactId: 'simple-crud-app', // Matches artifactId in pom.xml
                                 classifier: '',
                                 file: 'target/simple-crud-app-1.0-SNAPSHOT.war',
                                 type: 'war'
