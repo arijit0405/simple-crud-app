@@ -64,7 +64,7 @@ pipeline {
                         nexusVersion: 'nexus3',
                         protocol: 'http',
                         nexusUrl: 'localhost:8081',
-                        repository: 'maven-releases',
+                        repository: 'maven-snapshots', // Use snapshot repository for snapshots
                         credentialsId: 'nexus-credentials',
                         groupId: 'com.example',  // Matches groupId in pom.xml
                         version: '1.0-SNAPSHOT', // Matches version in pom.xml
